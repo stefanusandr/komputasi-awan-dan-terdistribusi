@@ -1,0 +1,9 @@
+# Materi internal dosen - tidak untuk ikut ke repo yang di-fork mahasiswa.
+/rubrik-moodle/
+
+# File umum yang sebaiknya tidak ter-commit
+.DS_Store
+__pycache__/
+*.pyc
+venv/
+.env

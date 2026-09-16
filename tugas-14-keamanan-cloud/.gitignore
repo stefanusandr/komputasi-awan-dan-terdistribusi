@@ -1,0 +1,6 @@
+# Jangan pernah commit file config berisi kredensial asli.
+.env
+*.pem
+*.key
+venv/
+__pycache__/

@@ -1,0 +1,28 @@
+name: CI Example - Penggunaan GitHub Secrets
+
+on:
+  workflow_dispatch:   # bisa dijalankan manual dari tab Actions
+  push:
+    branches: [main]
+    paths:
+      - "tugas-14-keamanan-cloud/**"
+
+jobs:
+  demo-secret-usage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # TODO 1: pastikan kalian sudah membuat secret bernama DUMMY_API_KEY
+      # di Settings -> Secrets and variables -> Actions repo GitHub kalian.
+
+      - name: Pakai secret sebagai environment variable
+        env:
+          DUMMY_API_KEY: ${{ secrets.DUMMY_API_KEY }}
+        run: |
+          # TODO 2: tulis command yang MENGGUNAKAN $DUMMY_API_KEY (mis. simulasi
+          # memanggil API), tapi JANGAN PERNAH mencetak nilainya langsung
+          # (mis. jangan `echo $DUMMY_API_KEY`). Buktikan GitHub otomatis
+          # mask nilainya jika sampai tercetak.
+          echo "Panjang API key yang dipakai: ${#DUMMY_API_KEY} karakter"
+          echo "TODO: tambahkan langkah lain yang benar-benar memakai secret ini"
