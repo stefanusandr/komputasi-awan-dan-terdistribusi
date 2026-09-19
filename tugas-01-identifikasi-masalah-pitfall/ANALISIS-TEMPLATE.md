@@ -6,7 +6,7 @@
 |---|---|---|
 | [Stefanus Andri Hendrawan] | [103072400115] | [pitfall 1] |
 | [Fatih Khairu Alfifiajri] | [103072400105] | [pitfall 2] |
-| [nama 3] | [nim] | [pitfall/bagian yang dikerjakan] |
+| [Moh Irham Maulana 3] | [103072400063] | [pitfall 3] |
 
 ## Pitfall 1: [he network is reliable] — ditulis oleh [Stefanus Andri hendrawan]
 
@@ -36,7 +36,7 @@
 
 ---
 
-## Pitfall 3: [Single Point of Failure] — ditulis oleh [nama]
+## Pitfall 3: [Single Point of Failure] — ditulis oleh [Moh Irham Maulana]
 
 **Bukti di skenario:** [        ]
 
