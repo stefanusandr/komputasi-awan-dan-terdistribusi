@@ -26,13 +26,13 @@
 
 **Bukti di skenario:** [tidak ada timeout sama sekali pada pemanggilan antar service (modul pesanan memanggil modul pembayaran dan menunggu tanpa batas waktu)]
 
-**Kenapa ini keliru:** [ karena kodenya tertulis `# network is always reliable, no need for retry` dan tidak adanya time out jadi server membaca koneksi tidak akan pernah gagal]
+**Kenapa ini keliru:** [karena kodenya tertulis `# network is always reliable, no need for retry` dan tidak adanya time out jadi server membaca koneksi tidak akan pernah gagal]
 
 **Dampak ke FoodGo:** [ saat trafik naik request menumpuk membuat kegagalan sistem]
 
-**Solusi desain awal:**  [ tambahkan time out di setiap servis agar tidak terjadi penumpukan request yang membuat kegagalan sistem]
+**Solusi desain awal:**  [tambahkan time out di setiap servis agar tidak terjadi penumpukan request yang membuat kegagalan sistem]
 
-**Trade-off:** [ tambahkan time out agar tidak crash jika trafik melonjak namun bisa memnyebabkan transaksi pengguna ditolak jika server sibuk ]
+**Trade-off:** [tambahkan time out agar tidak crash jika trafik melonjak namun bisa memnyebabkan transaksi pengguna ditolak jika server sibuk]
 
 ---
 
