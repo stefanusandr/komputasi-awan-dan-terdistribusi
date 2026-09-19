@@ -5,7 +5,7 @@
 | Nama | NIM | Kontribusi |
 |---|---|---|
 | [Stefanus Andri Hendrawan] | [103072400115] | [pitfall 1] |
-| [nama 2] | [nim] | [pitfall/bagian yang dikerjakan] |
+| [Fatih Khairu Alfifiajri] | [103072400105] | [pitfall 2] |
 | [nama 3] | [nim] | [pitfall/bagian yang dikerjakan] |
 
 ## Pitfall 1: [he network is reliable] — ditulis oleh [Stefanus Andri hendrawan]
@@ -22,17 +22,17 @@
 
 ---
 
-## Pitfall 2: [Latency is Zero] — ditulis oleh [nama]
+## Pitfall 2: [Latency is Zero] — ditulis oleh [Fatih Khairu Alfifajri]
 
-**Bukti di skenario:** [.tidak ada timeout sama sekali pada pemanggilan antar service (modul pesanan memanggil modul pembayaran dan menunggu tanpa batas waktu)." dan "Aplikasi jadi sangat lambat, beberapa permintaan timeout]
+**Bukti di skenario:** [tidak ada timeout sama sekali pada pemanggilan antar service (modul pesanan memanggil modul pembayaran dan menunggu tanpa batas waktu)]
 
-**Kenapa ini keliru:** [          ]
+**Kenapa ini keliru:** [ karena kodenya tertulis `# network is always reliable, no need for retry` dan tidak adanya time out jadi server membaca koneksi tidak akan pernah gagal]
 
-**Dampak ke FoodGo:** [          ]
+**Dampak ke FoodGo:** [ saat trafik naik request menumpuk membuat kegagalan sistem]
 
-**Solusi desain awal:**  [        ]
+**Solusi desain awal:**  [ tambahkan time out di setiap servis agar tidak terjadi penumpukan request yang membuat kegagalan sistem]
 
-**Trade-off:** [        ]
+**Trade-off:** [ tambahkan time out agar tidak crash jika trafik melonjak namun bisa memnyebabkan transaksi pengguna ditolak jika server sibuk ]
 
 ---
 

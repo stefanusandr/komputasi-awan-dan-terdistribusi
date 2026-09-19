@@ -17,6 +17,6 @@
 
 > Wajib diisi sesuai kebijakan Level 2 di [`../RUBRIK-UMUM.md`](../RUBRIK-UMUM.md). Tulis "Tidak memakai AI" pada baris pertama jika memang tidak dipakai. Hanya untuk brainstorming ide/outline — bukan untuk kode/analisis/teks akhir.
 
-| Tanggal | Tool AI | Prompt yang diberikan | Ringkasan saran/ide AI | Bagaimana diolah jadi tulisan/kode sendiri |
+| 09-19-2026 | Gemini | dampak ada dan tidaknya timeout pada aplikasi pesan antar makanan| menjelaskan definisi time out dan apa yang terjadi jika ada dan tidaknya time out pada aplikasi | mengolah kembali ringkasan tersebut sesuai dengan studi kasus FoodGo |
 |---|---|---|---|---|
 | ... | ... | ... | ... | ... |
