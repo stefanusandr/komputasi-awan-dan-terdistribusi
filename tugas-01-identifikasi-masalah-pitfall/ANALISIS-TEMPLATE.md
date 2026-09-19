@@ -6,7 +6,7 @@
 |---|---|---|
 | [Stefanus Andri Hendrawan] | [103072400115] | [pitfall 1] |
 | [Fatih Khairu Alfifiajri] | [103072400105] | [pitfall 2] |
-| [Moh Irham Maulana 3] | [103072400063] | [pitfall 3] |
+| [Moh Irham Maulana ] | [103072400063] | [pitfall 3] |
 
 ## Pitfall 1: [he network is reliable] — ditulis oleh [Stefanus Andri hendrawan]
 
