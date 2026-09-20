@@ -38,15 +38,15 @@
 
 ## Pitfall 3: [Single Point of Failure] — ditulis oleh [Moh Irham Maulana]
 
-**Bukti di skenario:** [        ]
+**Bukti di skenario:** [ semua transaksi hanya bergantung pada satu modul pembayaran tunggal tanpa adanya server cadangan atau mekanisme distribusi beban ]
 
-**Kenapa ini keliru:** [          ]
+**Kenapa ini keliru:** [ dalam arsitektur sistem terdistribusi, mengandalkan satu titik (single point of failure)membuat sistem tidak memiliki toleransi kesalahan(fault tolerance)jika satu komponen ini bermasalah, tidak ada jalur alternatif ]
 
-**Dampak ke FoodGo:** [          ]
+**Dampak ke FoodGo:** [ modul pembayaran menjadi bottleneck(leherbotol),yang membuat beban menumpuk di modul tersebut dan langsung melumpuhkan seluruh server saat trafik sedang tinggi ]
 
-**Solusi desain awal:**  [        ]
+**Solusi desain awal:**  [ menerapkan redundansi dengan membuat replika/beberapa instance untuk modul pembayaran,serta menggunakan load balance untuk mendistribusikan beban trafik secara merata ]
 
-**Trade-off:** [        ]
+**Trade-off:** [ membutuhkan biaya operasional infrastruktur yang lebih mahal untuk menjalankan banyak server,serta meningkatkan kompleksitas dalam menjaga sinkronisasi data antar modul ]
 
 ---
 
