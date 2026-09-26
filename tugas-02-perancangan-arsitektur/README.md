@@ -108,16 +108,16 @@ graph TD
     RestoSvc["Modul Katalog & Resto"]
     CourierSvc["Modul Kurir & Notifikasi"]
 
-    Client -->|1. POST /order (Sinkron)| Gateway
-    Gateway -->|2. Forward Request (Sinkron)| OrderSvc
-    OrderSvc -->|3. POST /charge (Sinkron + Timeout)| PaymentSvc
-    PaymentSvc -.->|4. Status Bayar Sukses (Sinkron Response)| OrderSvc
-    OrderSvc -.->|5. Respon 'Pesanan Diterima' (Sinkron Response)| Gateway
-    Gateway -.->|6. Notifikasi Layar Sukses| Client
+    Client -->|"1. POST /order (Sinkron)"| Gateway
+    Gateway -->|"2. Forward Request (Sinkron)"| OrderSvc
+    OrderSvc -->|"3. POST /charge (Sinkron Timeout)"| PaymentSvc
+    PaymentSvc -.->|"4. Status Bayar Sukses (Sinkron)"| OrderSvc
+    OrderSvc -.->|"5. Respon Pesanan Diterima (Sinkron)"| Gateway
+    Gateway -.->|"6. Notifikasi Layar Sukses"| Client
 
-    OrderSvc ==>|7. Publish Event: OrderPaid (Asinkron)| Broker
-    Broker ==>|8a. Push/Pull Event (Asinkron)| RestoSvc
-    Broker ==>|8b. Push/Pull Event (Asinkron)| CourierSvc
+    OrderSvc -->|"7. Publish Event: OrderPaid (Asinkron)"| Broker
+    Broker -.->|"8a. Push Event OrderPaid (Asinkron)"| RestoSvc
+    Broker -.->|"8b. Push Event OrderPaid (Asinkron)"| CourierSvc
 ```
 
 ### B. Penjelasan Alur Skenario End-to-End
