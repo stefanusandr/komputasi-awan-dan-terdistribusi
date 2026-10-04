@@ -1,0 +1,3 @@
+PS C:\Users\ASUS\OneDrive\Documents\smstr5\kadt\komputasi-awan-dan-terdistribusi-main\tugas-03-multithreading-container> python src/order_simulator.py
+Total pesanan diproses: 62 (seharusnya 100)
+RACE CONDITION TERDETEKSI - lengkapi TODO 1 & TODO 2 dengan Lock!
