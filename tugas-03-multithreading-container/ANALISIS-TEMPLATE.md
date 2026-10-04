@@ -42,19 +42,25 @@ Secara konseptual pada tingkat instruksi mesin/bytecode interpreter (CPython), o
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Memori as Memori Bersama (processed_count = 10)
-    participant T1 as Thread-1 (Worker 1)
-    participant T2 as Thread-2 (Worker 2)
+    
+    actor T1 as Thread-1 (Worker 1)
+    actor T2 as Thread-2 (Worker 2)
+    participant Memori as Memori Bersama (Count = 10)
 
-    Note over Memori, T2: Skenario Race Condition (Lost Update)
-    T1->>Memori: 1. Read: baca processed_count (nilai = 10)
-    T2->>Memori: 2. Read: baca processed_count (nilai = 10)
+    Note over T1, Memori: Simulasi Bahaya Race Condition (Lost Update)
+
+    T1->>Memori: 1. Read: baca nilai (Count = 10)
+    T2->>Memori: 2. Read: baca nilai (Count = 10)
+
     Note over T1: 3. Modify: hitung 10 + 1 = 11
     Note over T2: 4. Modify: hitung 10 + 1 = 11
-    T1->>Memori: 5. Write: simpan 11 ke processed_count
-    Note over Memori: processed_count bernilai 11
-    T2->>Memori: 6. Write: simpan 11 ke processed_count (OVERWRITE!)
-    Note over Memori: processed_count TETAP bernilai 11!<br/>Padahal 2 pesanan telah selesai diproses.
+
+    T1->>Memori: 5. Write: simpan nilai 11
+    Note over Memori: processed_count sementara = 11
+
+    T2->>Memori: 6. Write: simpan nilai 11 (OVERWRITE!)
+    
+    Note over Memori: **HASIL KACAU** <br/>processed_count TETAP bernilai 11!<br/>Padahal 2 pesanan telah selesai diproses.
 ```
 
 ### B. Bukti Empiris Percobaan Tanpa Lock
@@ -96,23 +102,38 @@ def process_order(order_id: int) -> None:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Lock as threading.Lock()
-    participant T1 as Thread-1 (Worker 1)
-    participant T2 as Thread-2 (Worker 2)
-    participant Memori as Memori Bersama (processed_count = 10)
+    
+    actor T1 as Thread-1 (Worker 1)
+    actor T2 as Thread-2 (Worker 2)
+    participant Lock as Mutex Lock
+    participant Memori as Memori Bersama (Count = 10)
 
-    Note over Lock, Memori: Skenario Terproteksi dengan Lock (Mutual Exclusion)
-    T1->>Lock: 1. acquire() -> BERHASIL (Lock dipegang T1)
-    T2->>Lock: 2. acquire() -> TERTAHAN (Blocked / Menunggu)
-    T1->>Memori: 3. Read & Modify (10 + 1 = 11)
-    T1->>Memori: 4. Write: simpan 11 ke processed_count
-    T1->>Lock: 5. release() -> Lock dilepas
-    Note over Lock: Lock bebas, T2 terbangun
-    T2->>Lock: 6. acquire() -> BERHASIL (Lock dipegang T2)
-    T2->>Memori: 7. Read: baca processed_count (nilai terbaru = 11)
-    T2->>Memori: 8. Modify & Write: simpan 12 ke processed_count
-    T2->>Lock: 9. release() -> Lock dilepas
-    Note over Memori: processed_count = 12 (AKURAT & KONSISTEN)
+    Note over T1, Memori: Skenario Aman dengan threading.Lock()
+
+    T1->>Lock: acquire() -> BERHASIL (Lock dikunci T1)
+    activate Lock
+    
+    Note over T2: Terblokir / Menunggu<br/>karena Lock sedang dipegang
+    T2--xLock: acquire() [Tertahan]
+
+    T1->>Memori: Read & Modify (10 + 1 = 11)
+    T1->>Memori: Write: simpan nilai 11
+    
+    T1->>Lock: release() -> Lock dilepas
+    deactivate Lock
+
+    Note over T2: Lock bebas, T2 kembali aktif!
+
+    T2->>Lock: acquire() -> BERHASIL (Lock dikunci T2)
+    activate Lock
+    
+    T2->>Memori: Read: baca nilai terbaru (11)
+    T2->>Memori: Modify & Write: simpan nilai 12
+    
+    T2->>Lock: release() -> Lock dilepas
+    deactivate Lock
+
+    Note over Memori: Hasil Akhir: processed_count = 12<br/> **AKURAT & KONSISTEN**
 ```
 
 ### C. Bukti Empiris Percobaan dengan Lock
@@ -133,8 +154,8 @@ Mengapa multithreading adalah solusi yang tepat untuk masalah *"server FoodGo ke
 | **Ruang Alamat Memori (Address Space)** | Terisolasi penuh (*Separate Virtual Address Space*). Setiap proses menduplikasi heap, stack, data segment, dan code segment. | Berbagi ruang memori yang sama (*Shared Heap & Address Space*). Hanya call stack dan register yang independen per thread. |
 | **Overhead Memori per Entitas** | Sangat besar: ~10 MB hingga 30 MB per proses Python (akibat Process Control Block / PCB, page tables, libc, dan runtime interpreter). | Sangat kecil: ~8 KB hingga 64 KB per thread (hanya alokasi user/kernel stack). |
 | **Beban 100 Request Bersamaan** | $100 \times 20\text{ MB} \approx 2\text{ GB}$ alokasi memori instan. Membebani OS memory manager dan berujung Out-Of-Memory (OOM) Crash. | 10–100 threads hanya membutuhkan beberapa Megabyte total memori tambahan di heap yang sama. |
-| **Biaya Pembuatan (Creation Cost / Latency)** | Tinggi: OS harus memanggil kernel syscall `clone()`/`fork()`, mengalokasikan page directory, dan mengkloning deskriptor file. | Rendah: pembuatan thread berada dalam konteks proses yang sudah ada tanpa alokasi struktur kernel yang masif. |
-| **Overhead Pergantian Konteks (Context Switch)** | Berat: CPU harus mengganti page directory (*CR3 register* pada x86), mengosongkan Translation Lookaside Buffer (TLB flush), dan merusak CPU cache lokal (*cache invalidation*). | Ringan: Hanya menyimpan dan memuat ulang register CPU serta pointer stack ($SP, $PC), ruang memori virtual dan cache TLB tetap valid. |
+| **Biaya Pembuatan (Creation Cost / Latency)** | Tinggi: OS harus memanggil kernel syscall `clone()` / `fork()`, mengalokasikan page directory, dan mengkloning deskriptor file. | Rendah: pembuatan thread berada dalam konteks proses yang sudah ada tanpa alokasi struktur kernel yang masif. |
+| **Overhead Pergantian Konteks (Context Switch)** | Berat: CPU harus mengganti page directory (*CR3 register* pada x86), mengosongkan Translation Lookaside Buffer (TLB flush), dan merusak CPU cache lokal (*cache invalidation*). | Ringan: Hanya menyimpan dan memuat ulang register CPU serta pointer stack ($SP,$PC), ruang memori virtual dan cache TLB tetap valid. |
 | **Mekanisme Komunikasi Antar Entitas** | Rumit & Berat: Membutuhkan Inter-Process Communication (IPC) seperti pipe, socket UNIX, message queue, atau shared memory segmen terpisah. | Sangat Mudah: Langsung mengakses variabel global/heap objek yang sama (membutuhkan primitif sinkronisasi seperti Lock/Semaphore). |
 
 ### Hubungan Langsung dengan Studi Kasus FoodGo
