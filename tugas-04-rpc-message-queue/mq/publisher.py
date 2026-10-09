@@ -11,13 +11,17 @@ QUEUE_NAME = "pembayaran_berhasil"
 
 
 def main():
-    # TODO 1: buat koneksi ke RabbitMQ di localhost (pika.BlockingConnection
-    # dengan ConnectionParameters(host="localhost")), lalu buat channel.
-    connection = None
-    channel = None
+    # Buat koneksi ke RabbitMQ di localhost
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host="localhost")
+    )
+    channel = connection.channel()
 
-    # TODO 2: deklarasikan queue dengan nama QUEUE_NAME (channel.queue_declare),
-    # gunakan durable=True supaya pesan tidak hilang walau RabbitMQ restart.
+    # Deklarasikan queue dengan durable=True supaya pesan tidak hilang
+    # walau RabbitMQ restart
+    channel.queue_declare(queue=QUEUE_NAME, durable=True)
+
+    print(f"Publisher terhubung ke RabbitMQ. Mengirim 3 event ke queue '{QUEUE_NAME}'...\n")
 
     for i in range(1, 4):
         pesan = {
@@ -25,14 +29,24 @@ def main():
             "jumlah": 20000 * i,
             "timestamp": time.time(),
         }
-        # TODO 3: publish `pesan` (di-encode json) ke QUEUE_NAME memakai
-        # channel.basic_publish(...). Cetak log "Event terkirim: ..." setiap publish.
-        print(f"[TODO] Event belum benar-benar terkirim: {pesan}")
+        # Publish pesan ke queue dengan delivery_mode=2 (persistent)
+        # agar pesan tetap tersimpan di disk meskipun RabbitMQ restart
+        channel.basic_publish(
+            exchange="",
+            routing_key=QUEUE_NAME,
+            body=json.dumps(pesan),
+            properties=pika.BasicProperties(
+                delivery_mode=2,  # persistent message
+            ),
+        )
+        print(f"  Event terkirim: {pesan}")
         time.sleep(1)
 
-    # TODO 4: tutup koneksi (connection.close()) setelah selesai.
-    print("Publisher selesai mengirim event.")
+    # Tutup koneksi setelah selesai
+    connection.close()
+    print("\nPublisher selesai mengirim event. Koneksi ditutup.")
 
 
 if __name__ == "__main__":
     main()
+
