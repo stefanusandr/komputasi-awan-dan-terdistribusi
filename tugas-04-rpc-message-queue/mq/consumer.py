@@ -14,16 +14,16 @@ def callback(ch, method, properties, body):
     pesan = json.loads(body)
     # TODO 1: proses pesan (misalnya cetak "Kurir menerima notifikasi
     # pembayaran untuk {user_id} sejumlah {jumlah}").
-    print(f"[TODO] Pesan diterima tapi belum diproses: {pesan}")
+
     #cetak pesan
     print(f"Kurir menerima notifikasi pembayaran untuk {pesan['user_id']}"
           f" sejumlah rp{pesan['jumlah']}")
-    print(f" Timestemp pesan: {pesan['timestamp']}")
+    print(f"  Timestamp pesan: {pesan['timestamp']}")
 
     # TODO 2: kirim acknowledgement ke RabbitMQ (ch.basic_ack) supaya
     # pesan dihapus dari antrean setelah berhasil diproses.
     ch.basic_ack(delivery_tag=method.delivery_tag)
-    print(f"  [ACK] Pesan berhasil di akcnowledge.\n")
+    print(f"  [ACK] Pesan berhasil di-acknowledge.\n")
 
 
 def main():
