@@ -2,10 +2,33 @@
 
 ## Implementasi Bully
 - **Kendala saat mengisi TODO 1-4:**
-  - **TODO 1 (`on_message`):** Saat banyak node dijalankan hampir bersamaan, banyak thread koneksi dibuat sekaligus (`handle_connection`). Jika setiap kali menerima `ELECTION` node memicu thread baru `start_election()`, terjadi duplikasi pemilihan secara masif. Solusinya, ditambahkan guard `self.election_in_progress` dan pengecekan apakah node sudah berstatus leader (`self.leader_id == self.node_id`) agar node yang sudah jadi leader langsung merespons dengan `COORDINATOR` tanpa memicu election ulang. Selain itu, pada sistem operasi Windows ditemukan kendala `UnicodeEncodeError: 'charmap' codec can't encode character '\u2605'` saat mencetak simbol bintang ke console cp1252, sehingga simbol diganti dengan format ASCII standar (`***`).
-  - **TODO 2 (`start_election`):** Penanganan timeout non-blocking sebesar 2.0 detik (`ELECTION_TIMEOUT`) untuk menunggu balasan `OK` dari node-node yang ber-ID lebih tinggi. Flag `self.received_ok` harus di-reset setiap kali election baru dimulai. Apabila ada pesan `COORDINATOR` yang masuk saat proses menunggu timeout berlangsung, node tidak boleh menimpa leader tersebut dan harus membatalkan pencalonannya.
-  - **TODO 3 (`declare_leader`):** Membutuhkan sinkronisasi thread menggunakan `self.lock` untuk mengamankan modifikasi status `self.leader_id = self.node_id` dan `self.election_in_progress = False`, kemudian melakukan iterasi broadcast `COORDINATOR` ke semua peers (`self.peers`).
-  - **TODO 4 (`monitor_leader`):** Menentukan mekanisme liveness probe. Node leader tidak boleh mem-ping dirinya sendiri, dan jika sedang dalam masa election (`in_progress`), polling ditangguhkan. Pengecekan dilakukan periodik setiap 3 detik dengan mencoba membuka koneksi socket TCP ("PING"). Jika koneksi ditolak (`ConnectionRefusedError`), berarti leader mati, sehingga node mereset `self.leader_id = None` dan segera memanggil `start_election()`.
+ ## Daftar Tugas (TODO) Implementasi Leader Election
+
+- [ ] **TODO 1: Optimasi Handler `on_message`** 
+  - **Konteks:** Eksekusi banyak node secara bersamaan memicu lonjakan thread koneksi (`handle_connection`). Tanpa batasan, pesan `ELECTION` yang masuk bertubi-tubi akan memicu proses pemilihan secara redundan.
+  - **Tindakan:**
+    - Tambahkan *guard flag* `self.election_in_progress`.
+    - Lakukan verifikasi status kepemimpinan (`self.leader_id == self.node_id`). Jika node sudah menjadi *leader*, wajib langsung membalas dengan pesan `COORDINATOR` tanpa memulai pemilihan ulang.
+    - **Bugfix Terminal Windows:** Ganti karakter Unicode bintang (`\u2605`) menjadi ASCII standar (`***`) untuk mencegah *crash* `UnicodeEncodeError: 'charmap' codec can't encode character` pada *console* (cp1252).
+
+- [ ] **TODO 2: Mekanisme Timeout di `start_election`** 
+  - **Tindakan:**
+    - Terapkan *timeout non-blocking* selama `2.0` detik (`ELECTION_TIMEOUT`) untuk menunggu balasan `OK` dari node dengan ID yang lebih besar.
+    - Pastikan nilai *flag* `self.received_ok` selalu di-*reset* setiap kali memulai sesi pemilihan baru.
+    - **Resolusi Konflik:** Apabila di tengah waktu tunggu node menerima pesan `COORDINATOR` dari node lain, segera batalkan pencalonan diri agar tidak terjadi penimpaan posisi *leader*.
+
+- [ ] **TODO 3: Sinkronisasi Thread di `declare_leader`** 
+  - **Tindakan:**
+    - Implementasikan penguncian *thread* (`self.lock`) untuk mencegah *race condition* saat memperbarui *state* internal:
+      - `self.leader_id = self.node_id`
+      - `self.election_in_progress = False`
+    - Setelah *state* aman diperbarui, lakukan *broadcast* pesan `COORDINATOR` secara iteratif ke semua koneksi *peers* yang aktif (`self.peers`).
+
+- [ ] **TODO 4: Mekanisme Liveness Probe di `monitor_leader`** 
+  - **Tindakan:**
+    - Buat pengecekan ketersediaan (rutin setiap `3` detik) dengan mengirimkan *ping* melalui koneksi TCP socket (`"PING"`).
+    - **Pengecualian:** Node *leader* tidak boleh melakukan *ping* ke dirinya sendiri, dan proses *polling* harus ditangguhkan ( *paused* ) selama proses pemilihan sedang berlangsung.
+    - **Failover:** Jika hasil *ping* ditolak (`ConnectionRefusedError`), asumsikan *leader* telah *down*. Segera *reset* nilai `self.leader_id = None` dan eksekusi `start_election()` untuk memicu pemilihan baru.
 
 ## Skenario 1: Start normal
 - **Leader yang terpilih:** Node 5 (port 5005).
