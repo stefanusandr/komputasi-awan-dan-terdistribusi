@@ -11,9 +11,10 @@ Pelanggan FoodGo kesulitan menemukan alamat IP server kurir yang **dinamis** (ku
 Implementasikan **simulasi Chord DHT** sederhana (single-process, tidak perlu jaringan sungguhan — cukup simulasi struktur data & algoritma di satu program Python) yang memetakan ID Kurir ke alamat IP mereka.
 
 Konsep yang harus terlihat jalan dalam simulasi kalian:
+
 1. **Consistent hashing**: ID Kurir dan ID Node di-hash ke ruang angka yang sama (mis. 0–255 untuk kesederhanaan, `m=8` bit).
 2. **Ring topology**: node-node diurutkan melingkar berdasarkan hasil hash-nya.
-3. **Lookup**: fungsi `lookup(kurir_id)` yang menemukan node mana yang bertanggung jawab menyimpan mapping ID Kurir tersebut → alamat IP-nya (aturan Chord: node dengan ID hash **terkecil yang lebih besar atau sama dengan** hash key, disebut *successor*).
+3. **Lookup**: fungsi `lookup(kurir_id)` yang menemukan node mana yang bertanggung jawab menyimpan mapping ID Kurir tersebut → alamat IP-nya (aturan Chord: node dengan ID hash **terkecil yang lebih besar atau sama dengan** hash key, disebut _successor_).
 4. **Perubahan topologi**: simulasikan minimal satu node baru bergabung (`join`) atau satu node keluar (`leave`), tunjukkan bagaimana mapping berpindah tanggung jawab ke node lain.
 
 Skeleton disediakan di `src/chord_simulation.py` dengan fungsi hashing dan struktur ring sudah ada — bagian `lookup()`, `join()`, dan `leave()` sengaja dikosongkan.
@@ -43,12 +44,12 @@ tugas-06-penamaan-dht/
 
 ## Rubrik Penilaian (Tugas 6)
 
-| Komponen | Bobot | Kriteria |
-|---|---|---|
-| Implementasi lookup/join/leave benar | 35% | Consistent hashing & successor lookup sesuai aturan Chord |
-| Bukti perubahan topologi (join/leave) | 25% | Output menunjukkan mapping berpindah dengan benar |
-| Analisis kenapa DHT vs flat naming/DNS | 25% | Argumen spesifik ke kasus IP kurir dinamis, bukan definisi umum |
-| Proses & kontribusi kelompok | 15% | `JURNAL.md`, commit history |
+| Komponen                               | Bobot | Kriteria                                                        |
+| -------------------------------------- | ----- | --------------------------------------------------------------- |
+| Implementasi lookup/join/leave benar   | 35%   | Consistent hashing & successor lookup sesuai aturan Chord       |
+| Bukti perubahan topologi (join/leave)  | 25%   | Output menunjukkan mapping berpindah dengan benar               |
+| Analisis kenapa DHT vs flat naming/DNS | 25%   | Argumen spesifik ke kasus IP kurir dinamis, bukan definisi umum |
+| Proses & kontribusi kelompok           | 15%   | `JURNAL.md`, commit history                                     |
 
 ## Batasan Penggunaan AI (Level 2)
 
@@ -62,11 +63,11 @@ Kebijakan **Level 2 (AI Assisted Idea Generation & Structuring)** berlaku — li
 
 **Kelompok:** Kelompok 3
 
-| Nama | NIM | Kontribusi |
-|---|---|---|
+| Nama                     | NIM          | Kontribusi                                                                                                                                                |
+| ------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Stefanus Andri Hendrawan | 103072400115 | Implementasi logika Chord DHT (`find_successor`, `join`, `leave`, `register_kurir`, `lookup`), pengujian skenario join & leave, dokumentasi bukti output. |
-| Fatih Khairu Alfifajri | 103072400105 | Analisis perbandingan DHT/Chord vs flat naming dan DNS konvensional, penelusuran manual proses lookup, dokumentasi `JURNAL.md`. |
-| Moh Irham Maulana | 103072400063 | Analisis skenario node keluar dan perpindahan tanggung jawab key, pembuatan diagram ring topology, validasi artefak bukti di `bukti/`. |
+| Fatih Khairu Alfifajri   | 103072400105 | Analisis perbandingan DHT/Chord vs flat naming dan DNS konvensional, penelusuran manual proses lookup, dokumentasi `JURNAL.md`.                           |
+| Moh Irham Maulana        | 103072400063 | Analisis skenario node keluar dan perpindahan tanggung jawab key, pembuatan diagram ring topology, validasi artefak bukti di `bukti/`.                    |
 
 ---
 
@@ -82,7 +83,7 @@ Pendekatan flat naming sederhana menggunakan satu server pusat yang menyimpan ta
 
 1. **Single Point of Failure (SPOF):** Jika server pusat mati, seluruh sistem kehilangan kemampuan menemukan kurir manapun. Dalam konteks FoodGo yang beroperasi 24/7 dengan ribuan kurir aktif secara simultan, downtime sedetik saja berarti pesanan tidak dapat dialokasikan ke kurir.
 
-2. **Bottleneck Performa:** Setiap kali IP kurir berubah (yang terjadi sangat sering — potensial puluhan ribu update per menit pada skala FoodGo nasional), server pusat harus menangani *write operation* tersebut. Bersamaan, setiap *lookup* dari sistem penugasan pesanan juga membebani server yang sama. Server pusat menjadi *hot spot* yang membatasi skalabilitas.
+2. **Bottleneck Performa:** Setiap kali IP kurir berubah (yang terjadi sangat sering — potensial puluhan ribu update per menit pada skala FoodGo nasional), server pusat harus menangani _write operation_ tersebut. Bersamaan, setiap _lookup_ dari sistem penugasan pesanan juga membebani server yang sama. Server pusat menjadi _hot spot_ yang membatasi skalabilitas.
 
 3. **Tidak Toleran Terhadap Pertumbuhan:** Saat jumlah kurir bertambah dari ratusan ke puluhan ribu, satu server harus menangani seluruh beban tanpa mekanisme distribusi bawaan. Scaling hanya bisa dilakukan secara vertikal (hardware lebih kuat), bukan horizontal.
 
@@ -102,9 +103,9 @@ DHT (Distributed Hash Table) dengan protokol Chord menawarkan solusi yang mengat
 
 1. **Desentralisasi Penuh — Tanpa SPOF:** Tidak ada server pusat tunggal. Pemetaan `ID_Kurir → IP` didistribusikan secara merata ke seluruh node di ring. Jika satu node mati, hanya key yang dipegangnya yang perlu dipindahkan ke successor — node lain tetap beroperasi normal.
 
-2. **Consistent Hashing — Update IP Efisien:** Ketika IP kurir berubah, cukup update satu entri di node penanggung jawab (successor dari hash key kurir). Tidak ada caching TTL yang harus dipropagasi ke seluruh jaringan. Perubahan bersifat *immediate* — lookup berikutnya langsung mendapat IP terbaru.
+2. **Consistent Hashing — Update IP Efisien:** Ketika IP kurir berubah, cukup update satu entri di node penanggung jawab (successor dari hash key kurir). Tidak ada caching TTL yang harus dipropagasi ke seluruh jaringan. Perubahan bersifat _immediate_ — lookup berikutnya langsung mendapat IP terbaru.
 
-3. **Skalabilitas Horizontal — Lookup $O(\log N)$:** Dengan memanfaatkan *finger table*, Chord menjamin lookup dalam $O(\log N)$ hop, di mana $N$ adalah jumlah node. Menambah node baru hanya memindahkan sebagian kecil key dari successor, tanpa mempengaruhi seluruh ring (*minimal disruption*).
+3. **Skalabilitas Horizontal — Lookup $O(\log N)$:** Dengan memanfaatkan _finger table_, Chord menjamin lookup dalam $O(\log N)$ hop, di mana $N$ adalah jumlah node. Menambah node baru hanya memindahkan sebagian kecil key dari successor, tanpa mempengaruhi seluruh ring (_minimal disruption_).
 
 4. **Toleransi Perubahan Topologi:** Node dapat bergabung (`join`) dan keluar (`leave`) kapan saja. Hanya key di rentang yang terdampak yang berpindah tanggung jawab — key lainnya tetap stabil di node yang sama. Ini ideal untuk infrastruktur FoodGo di mana server node bisa ditambah/dikurangi sesuai beban.
 
@@ -116,15 +117,15 @@ DHT (Distributed Hash Table) dengan protokol Chord menawarkan solusi yang mengat
 
 Hasil hash dari masing-masing entitas (menggunakan SHA-1 mod 256, `M_BITS = 8`):
 
-| Entitas | String | Hash ID |
-|---|---|---|
-| node-bandung-1 | `"node-bandung-1"` | **40** |
-| node-jakarta-2 | `"node-jakarta-2"` | **102** |
+| Entitas         | String              | Hash ID |
+| --------------- | ------------------- | ------- |
+| node-bandung-1  | `"node-bandung-1"`  | **40**  |
+| node-jakarta-2  | `"node-jakarta-2"`  | **102** |
 | node-surabaya-1 | `"node-surabaya-1"` | **136** |
-| node-jakarta-1 | `"node-jakarta-1"` | **177** |
-| kurir-002 | `"kurir-002"` | 28 |
-| kurir-001 | `"kurir-001"` | 50 |
-| kurir-003 | `"kurir-003"` | 132 |
+| node-jakarta-1  | `"node-jakarta-1"`  | **177** |
+| kurir-002       | `"kurir-002"`       | 28      |
+| kurir-001       | `"kurir-001"`       | 50      |
+| kurir-003       | `"kurir-003"`       | 132     |
 
 Aturan penempatan key: key disimpan di **node dengan hash terkecil yang ≥ hash key** (successor). Jika tidak ada node dengan hash ≥ key, wrap-around ke node dengan hash terkecil.
 
@@ -160,6 +161,7 @@ graph TD
 ```
 
 Penjelasan penempatan:
+
 - **kurir-002** (hash=28): Node terkecil yang ≥ 28 adalah Node **40** (node-bandung-1).
 - **kurir-001** (hash=50): Node terkecil yang ≥ 50 adalah Node **102** (node-jakarta-2). Bukan Node 40, karena 40 < 50.
 - **kurir-003** (hash=132): Node terkecil yang ≥ 132 adalah Node **136** (node-surabaya-1).
@@ -239,23 +241,28 @@ Ketika Node 40 (node-bandung-1) keluar, **kurir-002** (hash=28) yang tadinya dip
 Berikut langkah-langkah detail bagaimana `lookup("kurir-001")` menemukan successor:
 
 ### Langkah 1: Hashing Key
+
 ```python
 key_hash = hash_id("kurir-001")
 # SHA-1("kurir-001") = b'...'
 # int.from_bytes(digest, "big") % 256 = 50
 ```
+
 `kurir-001` di-hash menjadi nilai **50** di ruang identifier 0–255.
 
 ### Langkah 2: Panggil `find_successor(50)`
+
 Fungsi `find_successor` mencari node dengan hash **terkecil yang ≥ 50** di antara node aktif.
 
 Daftar node aktif (terurut): `[40, 102, 136, 177]`
 
 Iterasi pencarian:
+
 1. Periksa Node **40**: 40 ≥ 50? → **Tidak** (40 < 50). Lanjut.
 2. Periksa Node **102**: 102 ≥ 50? → **Ya!** ✅ Kembalikan **102**.
 
 ### Langkah 3: Ambil Data dari `self.data`
+
 ```python
 # key_hash = 50 ada di self.data → ("kurir-001", "192.168.1.10")
 # Node penanggung jawab = Node 102 (node-jakarta-2, 10.0.0.2)
@@ -263,6 +270,7 @@ Iterasi pencarian:
 ```
 
 ### Langkah 4: Hasil
+
 ```
 kurir-001 (hash=50) → ditemukan di Node 102 (10.0.0.2), IP: 192.168.1.10
 ```
@@ -276,6 +284,7 @@ key_hash = hash_id("kurir-002") = 28
 ```
 
 Iterasi `find_successor(28)`:
+
 1. Periksa Node **102**: 102 ≥ 28? → **Ya!** ✅ Kembalikan **102**.
 
 Meskipun 28 jauh di bawah 102, Node 102 tetap menjadi successor karena ia adalah node terkecil yang masih ≥ 28 (setelah Node 40 tidak ada lagi di ring).
@@ -288,11 +297,11 @@ Meskipun 28 jauh di bawah 102, Node 102 tetap menjadi successor karena ia adalah
 
 Dengan 5 node aktif (`[40, 102, 123, 136, 177]`), pembagian tanggung jawab:
 
-| Key | Hash | Successor (Node Penanggung Jawab) |
-|---|---|---|
-| kurir-002 | 28 | Node 40 (node-bandung-1, 10.0.0.3) |
-| kurir-001 | 50 | Node 102 (node-jakarta-2, 10.0.0.2) |
-| kurir-003 | 132 | Node 136 (node-surabaya-1, 10.0.0.4) |
+| Key       | Hash | Successor (Node Penanggung Jawab)    |
+| --------- | ---- | ------------------------------------ |
+| kurir-002 | 28   | Node 40 (node-bandung-1, 10.0.0.3)   |
+| kurir-001 | 50   | Node 102 (node-jakarta-2, 10.0.0.2)  |
+| kurir-003 | 132  | Node 136 (node-surabaya-1, 10.0.0.4) |
 
 ### 4.2 Saat Node 40 (node-bandung-1) Keluar
 
@@ -316,7 +325,7 @@ Ketika `leave("node-bandung-1")` dipanggil:
   -> Key 'kurir-003' (hash=132) sekarang tanggung jawab Node 136 (10.0.0.4)
 ```
 
-Perhatikan bahwa **kurir-002** berpindah ke Node 102, sementara kurir-001 dan kurir-003 tidak terpengaruh. Ini mendemonstrasikan properti inti *consistent hashing*: **hanya key di rentang node yang terdampak yang perlu dipindahkan**, sementara key lainnya tetap stabil.
+Perhatikan bahwa **kurir-002** berpindah ke Node 102, sementara kurir-001 dan kurir-003 tidak terpengaruh. Ini mendemonstrasikan properti inti _consistent hashing_: **hanya key di rentang node yang terdampak yang perlu dipindahkan**, sementara key lainnya tetap stabil.
 
 ### 4.4 Verifikasi Lookup Setelah Leave
 
@@ -326,7 +335,7 @@ kurir-002 -> 192.168.1.11   ← tetap ditemukan (sekarang di Node 102, sebelumny
 kurir-003 -> 192.168.1.12   ← tetap ditemukan (Node 136)
 ```
 
-Semua lookup tetap berhasil — tidak ada data yang hilang meskipun satu node telah keluar dari ring. Inilah ketahanan (*resilience*) yang ditawarkan DHT/Chord.
+Semua lookup tetap berhasil — tidak ada data yang hilang meskipun satu node telah keluar dari ring. Inilah ketahanan (_resilience_) yang ditawarkan DHT/Chord.
 
 ---
 
