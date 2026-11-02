@@ -1,0 +1,116 @@
+============================================================
+SKENARIO: 4 NODE BERGABUNG KE RING
+============================================================
+[JOIN] Node 'node-jakarta-1' (id=177) bergabung, alamat 10.0.0.1
+  -> Node pertama di ring, menjadi penanggung jawab semua key.
+[JOIN] Node 'node-jakarta-2' (id=102) bergabung, alamat 10.0.0.2
+[JOIN] Node 'node-bandung-1' (id=40) bergabung, alamat 10.0.0.3
+[JOIN] Node 'node-surabaya-1' (id=136) bergabung, alamat 10.0.0.4
+
+============================================================
+STATUS RING CHORD
+============================================================
+Node aktif (4): [40] -> [102] -> [136] -> [177] -> [40] (wrap)
+
+  Node 40 (10.0.0.3):
+    - (tidak ada key)
+  Node 102 (10.0.0.2):
+    - (tidak ada key)
+  Node 136 (10.0.0.4):
+    - (tidak ada key)
+  Node 177 (10.0.0.1):
+    - (tidak ada key)
+============================================================
+
+============================================================
+SKENARIO: REGISTRASI KURIR
+============================================================
+[REGISTER] Kurir 'kurir-001' (hash=50, ip=192.168.1.10) -> disimpan di Node 102 (10.0.0.2)
+[REGISTER] Kurir 'kurir-002' (hash=28, ip=192.168.1.11) -> disimpan di Node 40 (10.0.0.3)
+[REGISTER] Kurir 'kurir-003' (hash=132, ip=192.168.1.12) -> disimpan di Node 136 (10.0.0.4)
+
+============================================================
+STATUS RING CHORD
+============================================================
+Node aktif (4): [40] -> [102] -> [136] -> [177] -> [40] (wrap)
+
+  Node 40 (10.0.0.3):
+    - kurir-002 (hash=28) -> 192.168.1.11
+  Node 102 (10.0.0.2):
+    - kurir-001 (hash=50) -> 192.168.1.10
+  Node 136 (10.0.0.4):
+    - kurir-003 (hash=132) -> 192.168.1.12
+  Node 177 (10.0.0.1):
+    - (tidak ada key)
+============================================================
+
+
+--- Lookup sebelum perubahan topologi ---
+[LOOKUP] 'kurir-001' (hash=50) -> ditemukan di Node 102 (10.0.0.2), IP: 192.168.1.10
+kurir-001 -> 192.168.1.10
+[LOOKUP] 'kurir-002' (hash=28) -> ditemukan di Node 40 (10.0.0.3), IP: 192.168.1.11
+kurir-002 -> 192.168.1.11
+[LOOKUP] 'kurir-003' (hash=132) -> ditemukan di Node 136 (10.0.0.4), IP: 192.168.1.12
+kurir-003 -> 192.168.1.12
+
+============================================================
+SKENARIO: NODE BARU BERGABUNG (node-medan-1)
+============================================================
+[JOIN] Node 'node-medan-1' (id=123) bergabung, alamat 10.0.0.5
+
+============================================================
+STATUS RING CHORD
+============================================================
+Node aktif (5): [40] -> [102] -> [123] -> [136] -> [177] -> [40] (wrap)
+
+  Node 40 (10.0.0.3):
+    - kurir-002 (hash=28) -> 192.168.1.11
+  Node 102 (10.0.0.2):
+    - kurir-001 (hash=50) -> 192.168.1.10
+  Node 123 (10.0.0.5):
+    - (tidak ada key)
+  Node 136 (10.0.0.4):
+    - kurir-003 (hash=132) -> 192.168.1.12
+  Node 177 (10.0.0.1):
+    - (tidak ada key)
+============================================================
+
+--- Lookup setelah node baru bergabung ---
+[LOOKUP] 'kurir-001' (hash=50) -> ditemukan di Node 102 (10.0.0.2), IP: 192.168.1.10
+kurir-001 -> 192.168.1.10
+[LOOKUP] 'kurir-002' (hash=28) -> ditemukan di Node 40 (10.0.0.3), IP: 192.168.1.11
+kurir-002 -> 192.168.1.11
+[LOOKUP] 'kurir-003' (hash=132) -> ditemukan di Node 136 (10.0.0.4), IP: 192.168.1.12
+kurir-003 -> 192.168.1.12
+
+============================================================
+SKENARIO: NODE KELUAR (node-bandung-1)
+============================================================
+[LEAVE] Node 'node-bandung-1' (id=40, ip=10.0.0.3) keluar dari ring
+  -> Key 'kurir-001' (hash=50) sekarang tanggung jawab Node 102 (10.0.0.2)
+  -> Key 'kurir-002' (hash=28) sekarang tanggung jawab Node 102 (10.0.0.2)
+  -> Key 'kurir-003' (hash=132) sekarang tanggung jawab Node 136 (10.0.0.4)
+
+============================================================
+STATUS RING CHORD
+============================================================
+Node aktif (4): [102] -> [123] -> [136] -> [177] -> [102] (wrap)
+
+  Node 102 (10.0.0.2):
+    - kurir-001 (hash=50) -> 192.168.1.10
+    - kurir-002 (hash=28) -> 192.168.1.11
+  Node 123 (10.0.0.5):
+    - (tidak ada key)
+  Node 136 (10.0.0.4):
+    - kurir-003 (hash=132) -> 192.168.1.12
+  Node 177 (10.0.0.1):
+    - (tidak ada key)
+============================================================
+
+--- Lookup setelah node keluar ---
+[LOOKUP] 'kurir-001' (hash=50) -> ditemukan di Node 102 (10.0.0.2), IP: 192.168.1.10
+kurir-001 -> 192.168.1.10
+[LOOKUP] 'kurir-002' (hash=28) -> ditemukan di Node 102 (10.0.0.2), IP: 192.168.1.11
+kurir-002 -> 192.168.1.11
+[LOOKUP] 'kurir-003' (hash=132) -> ditemukan di Node 136 (10.0.0.4), IP: 192.168.1.12
+kurir-003 -> 192.168.1.12
